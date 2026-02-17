@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>タイトフレーム計算 - KYOWA ROOF</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --ios-bg: #000000;
+            --ios-secondary-bg: #1c1c1e;
+            --ios-tertiary-bg: #2c2c2e;
+            --ios-quaternary-bg: #3a3a3c;
+            --ios-blue: #0a84ff;
+            --ios-green: #30d158;
+            --ios-orange: #ff9f0a;
+            --ios-text: #ffffff;
+            --ios-text-secondary: #8e8e93;
+            --ios-separator: #38383a;
+            --ios-light-gray: #d1d1d6; 
+        }
+
+        body {
+            background-color: var(--ios-bg);
+            color: var(--ios-text);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            line-height: 1.5;
+            touch-action: pan-y;
+        }
+
+        .tab-container {
+            background: linear-gradient(180deg, #161618 0%, #2c2c2e 100%);
+            padding: 3px;
+            border-radius: 12px;
+            display: flex;
+            margin-bottom: 20px;
+            border: 1px solid #38383a;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.05);
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 10px 0;
+            text-align: center;
+            font-weight: 600;
+            border-radius: 9px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--ios-text-secondary);
+            border: 1px solid transparent;
+        }
+
+        .tab-button.active {
+            background: linear-gradient(180deg, #636366 0%, #48484a 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+            border-color: #5a5a5e;
+            transform: translateY(-1px);
+        }
+
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+
+        .card {
+            background-color: var(--ios-secondary-bg);
+            border-radius: 20px;
+            border: 1px solid var(--ios-separator);
+        }
+
+        input, select {
+            background-color: var(--ios-tertiary-bg);
+            border: 1px solid var(--ios-separator);
+            color: var(--ios-text);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+            appearance: none;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--ios-blue);
+            background-color: var(--ios-quaternary-bg);
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        .label-text {
+            font-size: 0.92rem; 
+            font-weight: 600;
+            color: var(--ios-light-gray); 
+            margin-bottom: 0.4rem;
+            display: flex;
+            align-items: center;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            justify-content: center;
+        }
+
+        .unit-text {
+            font-weight: normal;
+            font-size: 0.8rem; 
+            color: var(--ios-light-gray);
+            margin-left: 0.2rem;
+            opacity: 0.8;
+            text-transform: none !important;
+        }
+
+        .select-wrapper::after {
+            content: '▼';
+            font-size: 0.6rem;
+            position: absolute;
+            right: 0.8rem;
+            top: 70%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: var(--ios-light-gray);
+        }
+
+        .result-display-box {
+            background: linear-gradient(145deg, #001a35, #003366);
+            border: 1px solid #0a84ff44;
+            color: #ffffff;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+            font-size: 32px !important;
+        }
+        
+        .result-display-box-green {
+            background: linear-gradient(145deg, #002b12, #004d23);
+            border: 1px solid #30d15844;
+            color: #ffffff;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+            font-size: 32px !important;
+        }
+
+        .table-container {
+            border-radius: 12px;
+            border: 1px solid var(--ios-separator);
+            background: var(--ios-bg);
+        }
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .result-table th {
+            background: rgba(44, 44, 46, 0.95);
+            font-weight: bold;
+            padding: 10px;
+            border-bottom: 1px solid var(--ios-separator);
+        }
+        .result-table .label-row-th {
+            background: var(--ios-tertiary-bg);
+            color: var(--ios-text);
+            font-size: 1rem;
+            padding: 12px;
+        }
+        .result-table th:first-child,
+        .result-table td:first-child {
+            border-right: 1px solid var(--ios-separator);
+        }
+        .result-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--ios-separator);
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .total-count-box-orange {
+            background-color: rgba(255, 159, 10, 0.1);
+            border: 1px solid rgba(255, 159, 10, 0.2);
+            color: var(--ios-orange);
+            padding: 14px 16px;
+            border-radius: 12px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-6 pb-12">
+    <div id="main-container" class="max-w-md mx-auto min-h-screen">
+        <header class="text-center mb-6">
+            <h1 class="text-2xl font-semibold tracking-tight">タイトフレーム計算</h1>
+            <div class="text-[11px] text-[#d1d1d6] uppercase tracking-[0.2em] mt-1 font-bold">KYOWA ROOF PRO</div>
+        </header>
+
+        <div class="tab-container">
+            <button id="tab-calc" class="tab-button active" onclick="switchTab('calc')">計算</button>
+            <button id="tab-table" class="tab-button" onclick="switchTab('table')">割付表</button>
+        </div>
+
+        <div id="view-calc" class="view-section active">
+            <div class="card p-5 space-y-5 shadow-2xl">
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="select-wrapper relative">
+                        <label class="label-text">サイズ</label>
+                        <select id="sizeSelect" class="w-full h-14 text-[17px] font-bold rounded-xl bg-[#0d0d0d] border-[#38383a]">
+                            <option value="600">600タイプ</option>
+                            <option value="500">500タイプ</option>
+                            <option value="1000">1000タイプ</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="label-text">全長芯<span class="unit-text">(mm)</span></label>
+                        <input type="text" id="centerLength" readonly 
+                            class="w-full h-14 text-lg font-bold rounded-xl bg-[#0d0d0d] border-dashed border-gray-600 text-[#d1d1d6]">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="label-text">全長 (L)<span class="unit-text">(mm)</span></label>
+                    <div class="relative">
+                        <!-- ×ボタン（clearBtn）を削除しました -->
+                        <input type="text" id="totalLengthDisplay" inputmode="decimal" enterkeyhint="done" placeholder="数値を入力" 
+                            class="w-full h-20 text-3xl font-bold rounded-2xl bg-[#0d0d0d] border border-[#ff9f0a] shadow-lg text-white">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 opacity-80">
+                    <div>
+                        <label class="label-text text-[#d1d1d6]">山寸法<span class="unit-text">(mm)</span></label>
+                        <input type="text" id="yamaDim" readonly class="w-full h-10 bg-transparent rounded-lg border-gray-700 text-[#d1d1d6]">
+                    </div>
+                    <div>
+                        <label class="label-text text-[#d1d1d6]">谷寸法<span class="unit-text">(mm)</span></label>
+                        <input type="text" id="taniDim" readonly class="w-full h-10 bg-transparent rounded-lg border-gray-700 text-[#d1d1d6]">
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-800 pt-2"></div>
+
+                <div class="grid grid-cols-2 gap-0 border-b border-gray-800 pb-2">
+                    <div class="pr-3 border-r border-gray-800">
+                        <label class="label-text text-[#0a84ff]">谷芯<span class="unit-text">(mm)</span></label>
+                        <input type="text" id="taniZansun" readonly 
+                            class="result-display-box w-full h-20 font-black rounded-2xl">
+                    </div>
+                    <div class="pl-3">
+                        <label class="label-text text-[#30d158]">山芯<span class="unit-text">(mm)</span></label>
+                        <input type="text" id="yamaZansun" readonly 
+                            class="result-display-box-green w-full h-20 font-black rounded-2xl">
+                    </div>
+                </div>
+                
+                <p class="text-[13.5px] text-[#ff9f0a] font-medium text-center leading-tight">
+                    材料寸法は谷芯、山芯を反対にしてください
+                </p>
+
+                <div id="totalCountSectionCalc" class="total-count-box-orange mt-2 hidden">
+                    <span class="text-[15px] uppercase tracking-wider">本数の合計</span>
+                    <span id="totalCountDisplayCalc" class="text-xl">0 本</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-table" class="view-section">
+            <div id="tableContent">
+                <div class="total-count-box-orange">
+                    <span class="text-[15px] uppercase tracking-wider">本数の合計</span>
+                    <span id="totalCountDisplay" class="text-xl">0 本</span>
+                </div>
+                
+                <div class="table-container shadow-2xl bg-black">
+                    <table class="result-table">
+                        <thead>
+                            <tr>
+                                <th colspan="2" class="label-row-th">割付寸法</th>
+                            </tr>
+                            <tr class="text-[15px]">
+                                <th class="text-[#0a84ff]">谷芯 <span class="unit-text">(mm)</span></th>
+                                <th class="text-[#30d158]">山芯 <span class="unit-text">(mm)</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultTableBody" class="text-gray-300"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="emptyMessage" class="text-center py-20 text-[#d1d1d6] font-bold hidden">
+                全長を入力すると割付表が生成されます
+            </div>
+        </div>
+
+        <p class="text-[10px] text-[#d1d1d6] mt-8 text-center italic tracking-wide">
+            ※計算結果は小数点切り捨て。
+        </p>
+    </div>
+
+    <script>
+        const sizeSelect = document.getElementById('sizeSelect');
+        const totalLengthDisplay = document.getElementById('totalLengthDisplay');
+        const yamaDimInput = document.getElementById('yamaDim');
+        const taniDimInput = document.getElementById('taniDim');
+        const centerLengthInput = document.getElementById('centerLength');
+        const taniZansunInput = document.getElementById('taniZansun');
+        const yamaZansunInput = document.getElementById('yamaZansun');
+        
+        const tableBody = document.getElementById('resultTableBody');
+        const totalCountDisplay = document.getElementById('totalCountDisplay');
+        const totalCountDisplayCalc = document.getElementById('totalCountDisplayCalc');
+        const totalCountSectionCalc = document.getElementById('totalCountSectionCalc');
+        const tableContent = document.getElementById('tableContent');
+        const emptyMessage = document.getElementById('emptyMessage');
+
+        const STORAGE_KEY = 'tight_frame_tab_data_v5';
+        let currentActiveTab = 'calc';
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        function switchTab(tabName) {
+            currentActiveTab = tabName;
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
+
+            document.getElementById(`view-${tabName}`).classList.add('active');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            
+            if (tabName === 'table') checkEmptyState();
+            window.scrollTo(0, 0);
+        }
+
+        function checkEmptyState() {
+            const rawValue = totalLengthDisplay.value.replace(/,/g, '');
+            const L = parseFloat(rawValue) || 0;
+            if (L === 0) {
+                tableContent.classList.add('hidden');
+                emptyMessage.classList.remove('hidden');
+            } else {
+                tableContent.classList.remove('hidden');
+                emptyMessage.classList.add('hidden');
+            }
+        }
+
+        function excelMod(number, divisor) {
+            if (divisor === 0) return 0;
+            return number - divisor * Math.floor(number / divisor);
+        }
+
+        function formatVal(val) {
+            if (isNaN(val) || val === null) return "0";
+            return Math.floor(val).toLocaleString();
+        }
+
+        function updateTable(L, baseTani, baseYama, increment) {
+            tableBody.innerHTML = "";
+            let currentTani = baseTani;
+            let currentYama = baseYama;
+            let count = 0;
+
+            while (currentTani <= L || currentYama <= L) {
+                const tr = document.createElement('tr');
+                
+                const tdTani = document.createElement('td');
+                tdTani.textContent = (currentTani <= L && currentTani >= 0) ? formatVal(currentTani) : "-";
+                tdTani.style.color = "var(--ios-blue)"; 
+                
+                const tdYama = document.createElement('td');
+                tdYama.textContent = (currentYama <= L && currentYama >= 0) ? formatVal(currentYama) : "-";
+                tdYama.style.color = "var(--ios-green)";
+
+                tr.appendChild(tdTani);
+                tr.appendChild(tdYama);
+                tableBody.appendChild(tr);
+
+                currentTani += increment;
+                currentYama += increment;
+                count++;
+                if (count > 1000) break;
+            }
+            
+            totalCountDisplay.textContent = count + " 本";
+            totalCountDisplayCalc.textContent = count + " 本";
+        }
+
+        function calculate() {
+            const size = parseInt(sizeSelect.value);
+            const rawValue = totalLengthDisplay.value.replace(/,/g, '');
+            const L = parseFloat(rawValue) || 0;
+
+            let yama = 0, tani = 0;
+            if (size === 600) { yama = 200; tani = 100; }
+            else if (size === 500) { yama = 250; tani = 125; }
+            else if (size === 1000) { yama = 500; tani = 250; }
+
+            yamaDimInput.value = formatVal(yama);
+            taniDimInput.value = formatVal(tani);
+
+            if (totalLengthDisplay.value === "" || L === 0) {
+                centerLengthInput.value = "";
+                taniZansunInput.value = "";
+                yamaZansunInput.value = "";
+                totalCountSectionCalc.classList.add('hidden');
+                return;
+            }
+
+            totalCountSectionCalc.classList.remove('hidden');
+
+            const centerL = L / 2;
+            const taniZan = excelMod(L / 2, yama);
+            const yamaZan = excelMod((L / 2) - tani, yama); 
+
+            centerLengthInput.value = formatVal(centerL);
+            taniZansunInput.value = formatVal(taniZan);
+            yamaZansunInput.value = formatVal(yamaZan);
+
+            updateTable(L, taniZan, yamaZan, size);
+            saveData();
+        }
+
+        function saveData() {
+            const data = { size: sizeSelect.value, totalLength: totalLengthDisplay.value };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function loadData() {
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                sizeSelect.value = data.size || "600";
+                totalLengthDisplay.value = data.totalLength || "";
+                calculate();
+            }
+            
+            document.body.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+                touchStartY = e.changedTouches[0].screenY;
+            }, { passive: true });
+
+            document.body.addEventListener('touchend', (e) => {
+                const diffX = touchStartX - e.changedTouches[0].screenX;
+                const diffY = Math.abs(touchStartY - e.changedTouches[0].screenY);
+                if (diffY < 60 && Math.abs(diffX) > 80 && document.activeElement.tagName !== 'INPUT') {
+                    switchTab(diffX > 0 ? 'table' : 'calc');
+                }
+            }, { passive: true });
+        }
+
+        totalLengthDisplay.addEventListener('focus', (e) => {
+            e.target.value = ''; 
+        });
+
+        totalLengthDisplay.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/[^\d]/g, '');
+            if (value !== "") e.target.value = parseInt(value).toLocaleString();
+            else e.target.value = "";
+            calculate();
+        });
+
+        totalLengthDisplay.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.target.blur(); 
+            }
+        });
+
+        totalLengthDisplay.addEventListener('blur', () => {
+            saveData();
+        });
+
+        sizeSelect.addEventListener('change', () => {
+            calculate();
+            saveData();
+        });
+
+        window.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>
