@@ -4,499 +4,646 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>タイトフレーム計算 - KYOWA ROOF</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
     <style>
         :root {
             --ios-bg: #000000;
-            --ios-secondary-bg: #1c1c1e;
-            --ios-tertiary-bg: #2c2c2e;
-            --ios-quaternary-bg: #3a3a3c;
+            --ios-card: #1c1c1e;
+            --ios-border: #333333;
+            --ios-orange: #ff9f0a;
             --ios-blue: #0a84ff;
             --ios-green: #30d158;
-            --ios-orange: #ff9f0a;
-            --ios-text: #ffffff;
-            --ios-text-secondary: #8e8e93;
-            --ios-separator: #38383a;
-            --ios-light-gray: #d1d1d6; 
+            --ios-silver: #c7c7cc;
+            --ios-silver-dark: #9a9a9e;
+            --label-gray: #b0b0b5;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-text-size-adjust: 100%;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background-color: var(--ios-bg);
-            color: var(--ios-text);
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Arial, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-            line-height: 1.5;
-            touch-action: pan-y;
+            margin: 0;
+            background: var(--ios-bg);
+            font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 3D立体タブ */
+        .tab-wrapper {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(15px);
+            padding: 6px 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 1px solid #222;
         }
 
         .tab-container {
-            background: linear-gradient(180deg, #161618 0%, #2c2c2e 100%);
-            padding: 3px;
-            border-radius: 12px;
             display: flex;
-            margin-bottom: 20px;
-            border: 1px solid #38383a;
+            background: #2c2c2e;
+            width: 100%;
+            max-width: 420px;
+            padding: 2px;
+            border-radius: 12px;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.05);
+            border: 1px solid #3a3a3c;
         }
 
         .tab-button {
             flex: 1;
-            padding: 10px 0;
-            text-align: center;
-            font-weight: 600;
-            border-radius: 9px;
+            padding: 6px 0;
+            border: none;
+            background: transparent;
+            color: var(--ios-silver-dark);
+            font-size: 14px;
+            font-weight: 800;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            color: var(--ios-text-secondary);
-            border: 1px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
         }
 
         .tab-button.active {
             background: linear-gradient(180deg, #636366 0%, #48484a 100%);
-            color: #ffffff;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
-            border-color: #5a5a5e;
+            color: var(--ios-orange) !important;
+            border: 1px solid #7c7c80;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15);
             transform: translateY(-1px);
         }
 
-        .view-section { display: none; }
-        .view-section.active { display: block; }
-
-        .card {
-            background-color: var(--ios-secondary-bg);
-            border-radius: 20px;
-            border: 1px solid var(--ios-separator);
+        .main-container {
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
         }
 
-        input, select {
-            background-color: var(--ios-tertiary-bg);
-            border: 1px solid var(--ios-separator);
-            color: var(--ios-text);
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            text-align: center;
-            appearance: none;
-        }
-
-        input::placeholder {
-            font-size: 0.92rem;
-            font-weight: normal;
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--ios-blue);
-            background-color: var(--ios-quaternary-bg);
-        }
-
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        input[type=number] {
-            -moz-appearance: textfield;
-        }
-
-        .label-text {
-            font-size: 0.92rem; 
-            font-weight: 600;
-            color: var(--ios-light-gray); 
-            margin-bottom: 0.4rem;
+        /* 計算結果パネル */
+        .result-stack { padding: 10px; }
+        .result-box {
+            height: 60px;
+            padding: 0 16px;
             display: flex;
             align-items: center;
+            justify-content: space-between;
+            border: 1.5px solid var(--ios-border);
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .result-box-blue { background: rgba(10, 132, 255, 0.15); border-color: var(--ios-blue); }
+        .result-box-green { background: rgba(48, 209, 88, 0.15); border-color: var(--ios-green); }
+
+        .result-value {
+            font-size: 37px; 
+            font-weight: 900;
+            color: #ffffff;
+            display: flex;
+            align-items: baseline;
+            gap: 1px;
+        }
+
+        .result-label-left {
+            font-size: 13px;
+            font-weight: 900;
+            color: #ffffff;
+            text-align: left;
+            line-height: 1.2;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            justify-content: center;
+            min-width: 60px;
         }
 
         .unit-text {
-            font-weight: normal;
-            font-size: 0.8rem; 
-            color: var(--ios-light-gray);
-            margin-left: 0.2rem;
-            opacity: 0.8;
-            text-transform: none !important;
+            font-size: 16px;
+            font-weight: 800;
+            color: #ffffff;
+            opacity: 0.6;
+            margin-left: 1px;
         }
 
-        .select-wrapper::after {
-            content: '▼';
-            font-size: 0.6rem;
+        .separator-slash {
+            font-size: 18px;
+            font-weight: 900;
+            opacity: 0.2;
+            margin: 0 4px;
+        }
+
+        .yane-area {
+            font-size: 15px;
+            font-weight: 700;
+            opacity: 0.7;
+            display: flex;
+            align-items: baseline;
+        }
+
+        /* セル形式入力グリッド */
+        .cell-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            background: var(--ios-border);
+            gap: 1px;
+            border-bottom: 1px solid var(--ios-border);
+            border-top: 1px solid var(--ios-border);
+        }
+
+        .calc-cell {
+            background: #121214;
+            height: 54px; 
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            grid-column: span 3;
+        }
+
+        .calc-cell-lg { height: 56px; }
+        .span-6 { grid-column: span 6 !important; }
+
+        .calc-cell.focused {
+            background: #1c1c1e;
+            box-shadow: inset 0 0 0 2px var(--ios-orange);
+            z-index: 10;
+        }
+
+        /* タイプ選択プルダウン用スタイル */
+        .type-select {
             position: absolute;
-            right: 0.8rem;
-            top: 70%;
-            transform: translateY(-50%);
-            pointer-events: none;
-            color: var(--ios-light-gray);
-        }
-
-        .result-display-box {
-            background: linear-gradient(145deg, #001a35, #003366);
-            border: 1px solid #0a84ff44;
-            color: #ffffff;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
-            font-size: 24px !important;
-        }
-        
-        .result-display-box-green {
-            background: linear-gradient(145deg, #002b12, #004d23);
-            border: 1px solid #30d15844;
-            color: #ffffff;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
-            font-size: 24px !important;
-        }
-
-        /* 単位用の小さいフォントスタイル */
-        .unit-small {
-            font-size: 0.85em;
-            margin-left: 2px;
-            font-weight: 500;
-        }
-
-        .table-container {
-            border-radius: 12px;
-            border: 1px solid var(--ios-separator);
-            background: var(--ios-bg);
-            overflow: hidden;
-        }
-        .result-table {
+            inset: 0;
             width: 100%;
-            border-collapse: collapse;
-        }
-        .result-table th {
-            background: rgba(44, 44, 46, 0.95);
-            font-weight: bold;
-            padding: 6px 10px;
-            border-bottom: 1px solid var(--ios-separator);
-            line-height: 1.2;
-        }
-        .result-table .label-row-th {
-            background: var(--ios-tertiary-bg);
-            color: var(--ios-text);
-            font-size: 1rem;
-            padding: 6px 12px;
-        }
-        .result-table th:first-child,
-        .result-table td:first-child {
-            border-right: 1px solid var(--ios-separator);
-        }
-        .result-table td {
-            padding: 6px 12px;
-            border-bottom: 1px solid var(--ios-separator);
-            text-align: center;
-            font-size: 1.2rem;
-            font-weight: bold;
-            line-height: 1.2;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 5;
         }
 
-        .total-count-box-orange {
-            background-color: rgba(255, 159, 10, 0.1);
-            border: 1px solid rgba(255, 159, 10, 0.2);
-            color: var(--ios-orange);
-            padding: 8px 16px;
-            border-radius: 12px;
-            font-weight: bold;
+        .input-value {
+            font-size: 26px;
+            font-weight: 900;
+            color: #ffffff;
+            flex: 1;
+            text-align: right;
+        }
+
+        .input-label-left {
+            font-size: 14px;
+            font-weight: 900;
+            color: var(--label-gray);
+            margin-right: 4px;
+            white-space: nowrap;
+        }
+
+        /* テンキー */
+        .keypad-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            background: #000;
+            padding: 1px;
+        }
+
+        .key-btn {
+            background: #1c1c1e;
+            color: white;
+            border: none;
+            height: 64px;
+            font-size: 24px;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.1s;
+        }
+        .key-btn:active { background: #333; }
+        .key-btn.orange { background: var(--ios-orange); font-weight: 900; }
+        .key-btn.gray { background: #2c2c2e; color: var(--label-gray); font-size: 18px; font-weight: 700; }
+
+        /* バックスペース用の特大フォント設定 */
+        .key-backspace {
+            font-size: 38px !important;
+            font-weight: 900 !important;
+            color: #ffffff !important;
+        }
+
+        /* 割付表表示 */
+        .table-area { padding: 10px; }
+        .table-card {
+            background: var(--ios-card);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--ios-border);
+        }
+        .table-cell {
+            padding: 6px 4px;
+            border-bottom: 1px solid var(--ios-border);
+            font-size: 18px;
+            font-weight: 900;
+            text-align: center;
+        }
+
+        .table-foot-row {
+            background: #2c2c2e;
+            border-top: 2px solid #444;
+        }
+
+        .app-footer-bar {
+            width: 100%;
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
+            padding: 16px 12px 8px 12px;
+            font-size: 14px;
+            font-weight: 400;
+            color: #666666;
+            letter-spacing: 0.05em;
         }
+
+        #toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(59, 130, 246, 0.95);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 16px;
+            opacity: 0;
+            z-index: 1000;
+            transition: 0.3s;
+            pointer-events: none;
+        }
+        #toast.show { opacity: 1; }
+        .hidden { display: none !important; }
     </style>
 </head>
-<body class="p-4 sm:p-6 pb-12">
-    <div id="main-container" class="max-w-md mx-auto min-h-screen">
-        <header class="text-center mb-6">
-            <h1 class="text-2xl font-semibold tracking-tight">タイトフレーム計算</h1>
-            <div class="text-[11px] text-[#d1d1d6] uppercase tracking-[0.2em] mt-1 font-bold">KYOWA ROOF PRO</div>
-        </header>
+<body>
 
+    <div id="toast">コピーしました</div>
+
+    <!-- タブメニュー -->
+    <div class="tab-wrapper">
         <div class="tab-container">
-            <button id="tab-calc" class="tab-button active" onclick="switchTab('calc')">計算</button>
+            <button id="tab-calc" class="tab-button active" onclick="switchTab('calc')">計算入力</button>
             <button id="tab-table" class="tab-button" onclick="switchTab('table')">割付表</button>
-        </div>
-
-        <div id="view-calc" class="view-section active">
-            <div class="card p-5 space-y-5 shadow-2xl">
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="select-wrapper relative">
-                        <label class="label-text">サイズ</label>
-                        <select id="sizeSelect" class="w-full h-14 text-[17px] font-bold rounded-xl bg-[#0d0d0d] border-[#38383a]">
-                            <option value="600">600タイプ</option>
-                            <option value="500">500タイプ</option>
-                            <option value="1000">1000タイプ</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="label-text">全長芯</label>
-                        <input type="text" id="centerLength" readonly 
-                            class="w-full h-14 text-lg font-bold rounded-xl bg-[#0d0d0d] border-dashed border-gray-600 text-[#d1d1d6]">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="label-text">全長 (L)</label>
-                    <div class="relative">
-                        <input type="text" id="totalLengthDisplay" inputmode="decimal" enterkeyhint="done" placeholder="数値を入力" 
-                            class="w-full h-14 text-2xl font-bold rounded-2xl bg-[#0d0d0d] border border-[#ff9f0a] shadow-lg text-white">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3 opacity-80">
-                    <div>
-                        <label class="label-text text-[#d1d1d6]">山寸法</label>
-                        <input type="text" id="yamaDim" readonly class="w-full h-10 bg-transparent rounded-lg border-gray-700 text-[#d1d1d6]">
-                    </div>
-                    <div>
-                        <label class="label-text text-[#d1d1d6]">谷寸法</label>
-                        <input type="text" id="taniDim" readonly class="w-full h-10 bg-transparent rounded-lg border-gray-700 text-[#d1d1d6]">
-                    </div>
-                </div>
-
-                <div class="border-t border-gray-800 pt-2"></div>
-
-                <div id="resultSection">
-                    <div class="label-text text-[#ff9f0a] text-center mb-4 tracking-[0.1em] font-black uppercase">端部 基準寸法</div>
-                    <div class="grid grid-cols-2 gap-0 border-b border-gray-800 pb-4">
-                        <div class="pr-3 border-r border-gray-800">
-                            <label class="label-text text-[#0a84ff]">谷芯</label>
-                            <input type="text" id="taniZansun" readonly 
-                                class="result-display-box w-full h-14 font-black rounded-2xl">
-                            <!-- 単位を追加 -->
-                            <div id="yaneWaritsukeTani" class="label-text mt-2 text-center text-[#8e8e93]"></div>
-                        </div>
-                        <div class="pl-3">
-                            <label class="label-text text-[#30d158]">山芯</label>
-                            <input type="text" id="yamaZansun" readonly 
-                                class="result-display-box-green w-full h-14 font-black rounded-2xl">
-                            <!-- 単位を追加 -->
-                            <div id="yaneWaritsukeYama" class="label-text mt-2 text-center text-[#8e8e93]"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="totalCountSectionCalc" class="total-count-box-orange mt-2 hidden">
-                    <span class="text-[15px] uppercase tracking-wider">本数の合計</span>
-                    <span id="totalCountDisplayCalc" class="text-xl">0 本</span>
-                </div>
-            </div>
-        </div>
-
-        <div id="view-table" class="view-section">
-            <div id="tableContent">
-                <div class="total-count-box-orange">
-                    <span class="text-[15px] uppercase tracking-wider">本数の合計</span>
-                    <span id="totalCountDisplay" class="text-xl">0 本</span>
-                </div>
-                
-                <div class="table-container shadow-2xl bg-black">
-                    <table class="result-table">
-                        <thead>
-                            <tr>
-                                <th colspan="2" class="label-row-th">
-                                    <div class="flex justify-between items-center h-full">
-                                        <span class="text-left font-bold">割付寸法</span>
-                                        <span class="text-[0.75rem] font-normal text-right opacity-80 whitespace-nowrap text-[var(--ios-light-gray)]">端からの墨出し寸法</span>
-                                    </div>
-                                </th>
-                            </tr>
-                            <tr class="text-[15px]">
-                                <th class="text-[#0a84ff]">谷芯 <span class="unit-text">(mm)</span></th>
-                                <th class="text-[#30d158]">山芯 <span class="unit-text">(mm)</span></th>
-                            </tr>
-                        </thead>
-                        <tbody id="resultTableBody" class="text-gray-300"></tbody>
-                    </table>
-                </div>
-            </div>
-            <div id="emptyMessage" class="text-center py-20 text-[#d1d1d6] font-bold hidden">
-                全長を入力すると割付表が生成されます
-            </div>
         </div>
     </div>
 
-    <script>
-        const sizeSelect = document.getElementById('sizeSelect');
-        const totalLengthDisplay = document.getElementById('totalLengthDisplay');
-        const yamaDimInput = document.getElementById('yamaDim');
-        const taniDimInput = document.getElementById('taniDim');
-        const centerLengthInput = document.getElementById('centerLength');
-        const taniZansunInput = document.getElementById('taniZansun');
-        const yamaZansunInput = document.getElementById('yamaZansun');
+    <div class="main-container">
+        <!-- 計算入力画面 -->
+        <div id="view-calc">
+            <!-- 結果パネル -->
+            <div class="result-stack">
+                <div class="result-box result-box-blue" onclick="copyValue('resTaniZan')">
+                    <div class="result-label-left text-[#0a84ff]">谷芯<br>端部基準</div>
+                    <div class="result-value">
+                        <span id="resTaniZan">-</span><span class="unit-text">㎜</span>
+                        <span class="separator-slash">/</span>
+                        <div class="yane-area">
+                            <span>屋根割付 </span><span id="resYaneTani">-</span><span class="unit-text text-[12px] opacity-40 ml-0.5">㎜</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="result-box result-box-green" onclick="copyValue('resYamaZan')">
+                    <div class="result-label-left text-[#30d158]">山芯<br>端部基準</div>
+                    <div class="result-value">
+                        <span id="resYamaZan">-</span><span class="unit-text">㎜</span>
+                        <span class="separator-slash">/</span>
+                        <div class="yane-area">
+                            <span>屋根割付 </span><span id="resYaneYama">-</span><span class="unit-text text-[12px] opacity-40 ml-0.5">㎜</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 入力セルグリッド -->
+            <div class="cell-grid">
+                <div class="calc-cell" id="type-cell">
+                    <span class="input-label-left">タイプ</span>
+                    <div id="display-size" class="input-value">600</div>
+                    <select id="sizeSelect" class="type-select" onchange="handleSelectChange(this.value)">
+                        <option value="600">600タイプ</option>
+                        <option value="500">500タイプ</option>
+                        <option value="1000">1000タイプ</option>
+                    </select>
+                    <span class="text-[10px] text-zinc-600 ml-1">▼</span>
+                </div>
+                <div class="calc-cell" style="background: #0a0a0b;">
+                    <span class="input-label-left">全長芯</span>
+                    <div id="display-centerL" class="input-value text-zinc-500">0</div>
+                </div>
+                <div class="calc-cell span-6 calc-cell-lg focused" onclick="focusInput('totalLength')">
+                    <span class="input-label-left">全長 (L)</span>
+                    <div id="display-totalLength" class="input-value">0</div>
+                </div>
+            </div>
+
+            <!-- テンキー (Cキーをバックスペースに変更) -->
+            <div class="keypad-container">
+                <button class="key-btn" onclick="pressKey('7')">7</button>
+                <button class="key-btn" onclick="pressKey('8')">8</button>
+                <button class="key-btn" onclick="pressKey('9')">9</button>
+                <button class="key-btn gray key-backspace" onclick="pressKey('backspace')">⇦</button>
+                
+                <button class="key-btn" onclick="pressKey('4')">4</button>
+                <button class="key-btn" onclick="pressKey('5')">5</button>
+                <button class="key-btn" onclick="pressKey('6')">6</button>
+                <button class="key-btn gray" onclick="pressKey('clearAll')" style="font-size: 18px; font-weight: 700; color: #ffffff;">AC</button>
+                
+                <button class="key-btn" onclick="pressKey('1')">1</button>
+                <button class="key-btn" onclick="pressKey('2')">2</button>
+                <button class="key-btn" onclick="pressKey('3')">3</button>
+                <button class="key-btn orange row-span-2 h-full" id="enter-btn-label" onclick="pressKey('enter')">⏎</button>
+                
+                <button class="key-btn" onclick="pressKey('0')">0</button>
+                <button class="key-btn" onclick="pressKey('00')">00</button>
+                <button class="key-btn" onclick="pressKey('000')">000</button>
+            </div>
+        </div>
+
+        <!-- 割付表画面 -->
+        <div id="view-table" class="hidden">
+            <div class="table-area">
+                <div class="table-card">
+                    <div class="bg-[#2c2c2e] p-3 flex justify-between items-center border-b border-[#444]">
+                        <span class="font-black text-base">全長: <span id="table-badge-L">-</span>㎜</span>
+                        <span class="text-sm bg-[#ff9f0a] px-2 py-0.5 rounded font-bold text-black shadow-sm">割付表</span>
+                    </div>
+                    <table class="w-full">
+                        <thead class="shadow-md">
+                            <tr class="bg-[#2c2c2e] text-[14px] text-zinc-400 uppercase font-bold border-b border-[#444]">
+                                <th class="py-2 border-r border-[#444] w-1/2 text-[#0a84ff] tracking-wider">谷芯(mm)</th>
+                                <th class="py-2 w-1/2 text-[#30d158] tracking-wider">山芯(mm)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultTableBody"></tbody>
+                        <tfoot class="table-foot-row shadow-inner">
+                            <tr class="font-bold border-t border-[#444]">
+                                <td class="py-2 border-r border-[#444] text-center text-[#0a84ff]">
+                                    <span class="text-[14px] block opacity-70 mb-0.5">本数合計</span>
+                                    <span class="text-[18px]"><span id="foot-totalCount">-</span>本</span>
+                                </td>
+                                <td class="py-2 text-center text-[#30d158]">
+                                    <span class="text-[14px] block opacity-70 mb-0.5">タイプ</span>
+                                    <span class="text-[18px]"><span id="foot-size">-</span>㎜</span>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- フッター -->
+        <div class="app-footer-bar">
+            <span>タイトフレーム計算</span>
+            <span>KYOWA ROOF</span>
+        </div>
+    </div>
+
+<script>
+    let currentActiveTab = 'calc';
+    let focusedInputId = 'totalLength';
+    let isOverwriteMode = true; // 上書きモードフラグ
+    const storageKey = 'tight_frame_v13_final';
+
+    const inputs = {
+        totalLength: '',
+        size: '600'
+    };
+
+    function switchTab(tabName) {
+        currentActiveTab = tabName;
+        document.getElementById('view-calc').classList.toggle('hidden', tabName !== 'calc');
+        document.getElementById('view-table').classList.toggle('hidden', tabName !== 'table');
+        document.getElementById('tab-calc').classList.toggle('active', tabName === 'calc');
+        document.getElementById('tab-table').classList.toggle('active', tabName === 'table');
         
-        const yaneWaritsukeTani = document.getElementById('yaneWaritsukeTani');
-        const yaneWaritsukeYama = document.getElementById('yaneWaritsukeYama');
+        if (tabName === 'table') generateTable();
+        window.scrollTo(0, 0);
+    }
 
-        const tableBody = document.getElementById('resultTableBody');
-        const totalCountDisplay = document.getElementById('totalCountDisplay');
-        const totalCountDisplayCalc = document.getElementById('totalCountDisplayCalc');
-        const totalCountSectionCalc = document.getElementById('totalCountSectionCalc');
-        const tableContent = document.getElementById('tableContent');
-        const emptyMessage = document.getElementById('emptyMessage');
-
-        const STORAGE_KEY = 'tight_frame_tab_data_v5';
-        let currentActiveTab = 'calc';
-        let touchStartX = 0;
-        let touchStartY = 0;
-
-        function switchTab(tabName) {
-            currentActiveTab = tabName;
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
-
-            document.getElementById(`view-${tabName}`).classList.add('active');
-            document.getElementById(`tab-${tabName}`).classList.add('active');
-            
-            if (tabName === 'table') checkEmptyState();
-            window.scrollTo(0, 0);
+    function focusInput(id) {
+        document.querySelectorAll('.calc-cell').forEach(el => el.classList.remove('focused'));
+        const displayEl = document.getElementById(`display-${id}`);
+        if (displayEl) {
+            displayEl.parentElement.classList.add('focused');
+            focusedInputId = id;
+            isOverwriteMode = true; // セル選択時に上書きモードをON
         }
+    }
 
-        function checkEmptyState() {
-            const rawValue = totalLengthDisplay.value.replace(/,/g, '');
-            const L = parseFloat(rawValue) || 0;
-            if (L === 0) {
-                tableContent.classList.add('hidden');
-                emptyMessage.classList.remove('hidden');
+    function handleSelectChange(val) {
+        inputs.size = val;
+        updateDisplay();
+        calculate();
+    }
+
+    function pressKey(key) {
+        if (key === 'backspace') {
+            // 一文字削除
+            inputs[focusedInputId] = inputs[focusedInputId].toString().slice(0, -1);
+            isOverwriteMode = false;
+        } else if (key === 'clearAll') {
+            inputs.totalLength = '';
+            inputs.size = '600';
+            document.getElementById('sizeSelect').value = '600';
+            isOverwriteMode = true;
+        } else if (key === 'enter') {
+            handleEnter();
+            return;
+        } else {
+            // 数値入力
+            if (isOverwriteMode) {
+                inputs[focusedInputId] = key; // 上書き
+                isOverwriteMode = false;
             } else {
-                tableContent.classList.remove('hidden');
-                emptyMessage.classList.add('hidden');
+                if (inputs[focusedInputId] === '0') inputs[focusedInputId] = key;
+                else inputs[focusedInputId] += key; // 追加
             }
         }
+        updateDisplay();
+        calculate();
+    }
 
-        function excelMod(number, divisor) {
-            if (divisor === 0) return 0;
-            return number - divisor * Math.floor(number / divisor);
-        }
+    function handleEnter() {
+        if (focusedInputId === 'totalLength') switchTab('table');
+    }
 
-        function formatVal(val) {
-            if (isNaN(val) || val === null) return "0";
-            return Math.floor(val).toLocaleString();
-        }
-
-        function updateTable(L, baseTani, baseYama, increment) {
-            tableBody.innerHTML = "";
-            let currentTani = baseTani;
-            let currentYama = baseYama;
-            let count = 0;
-
-            while (currentTani <= L || currentYama <= L) {
-                const tr = document.createElement('tr');
-                
-                const tdTani = document.createElement('td');
-                tdTani.textContent = (currentTani <= L && currentTani >= 0) ? formatVal(currentTani) : "-";
-                tdTani.style.color = "var(--ios-blue)"; 
-                
-                const tdYama = document.createElement('td');
-                tdYama.textContent = (currentYama <= L && currentYama >= 0) ? formatVal(currentYama) : "-";
-                tdYama.style.color = "var(--ios-green)";
-
-                tr.appendChild(tdTani);
-                tr.appendChild(tdYama);
-                tableBody.appendChild(tr);
-
-                currentTani += increment;
-                currentYama += increment;
-                count++;
-                if (count > 1000) break;
-            }
-            
-            totalCountDisplay.textContent = count + " 本";
-            totalCountDisplayCalc.textContent = count + " 本";
-        }
-
-        function calculate() {
-            const size = parseInt(sizeSelect.value);
-            const rawValue = totalLengthDisplay.value.replace(/,/g, '');
-            const L = parseFloat(rawValue) || 0;
-
-            let yama = 0, tani = 0;
-            if (size === 600) { yama = 200; tani = 100; }
-            else if (size === 500) { yama = 250; tani = 125; }
-            else if (size === 1000) { yama = 500; tani = 250; }
-
-            yamaDimInput.value = formatVal(yama);
-            taniDimInput.value = formatVal(tani);
-
-            if (totalLengthDisplay.value === "" || L === 0) {
-                centerLengthInput.value = "";
-                taniZansunInput.value = "";
-                yamaZansunInput.value = "";
-                yaneWaritsukeTani.innerHTML = "";
-                yaneWaritsukeYama.innerHTML = "";
-                totalCountSectionCalc.classList.add('hidden');
-                return;
-            }
-
-            totalCountSectionCalc.classList.remove('hidden');
-
-            const centerL = L / 2;
-            const taniZan = excelMod(L / 2, yama);
-            const yamaZan = excelMod((L / 2) - tani, yama); 
-
-            centerLengthInput.value = formatVal(centerL);
-            taniZansunInput.value = formatVal(taniZan);
-            yamaZansunInput.value = formatVal(yamaZan);
-
-            // 屋根割付の数字に単位「㎜」を付与（innerHTMLを使用して単位を装飾）
-            yaneWaritsukeTani.innerHTML = `屋根割付 ${formatVal(yamaZan)}<span class="unit-small">㎜</span>`;
-            yaneWaritsukeYama.innerHTML = `屋根割付 ${formatVal(taniZan)}<span class="unit-small">㎜</span>`;
-
-            updateTable(L, taniZan, yamaZan, size);
-            saveData();
-        }
-
-        function saveData() {
-            const data = { size: sizeSelect.value, totalLength: totalLengthDisplay.value };
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        }
-
-        function loadData() {
-            const savedData = localStorage.getItem(STORAGE_KEY);
-            if (savedData) {
-                const data = JSON.parse(savedData);
-                sizeSelect.value = data.size || "600";
-                totalLengthDisplay.value = data.totalLength || "";
-                calculate();
-            }
-            
-            document.body.addEventListener('touchstart', (e) => {
-                touchStartX = e.changedTouches[0].screenX;
-                touchStartY = e.changedTouches[0].screenY;
-            }, { passive: true });
-
-            document.body.addEventListener('touchend', (e) => {
-                const diffX = touchStartX - e.changedTouches[0].screenX;
-                const diffY = Math.abs(touchStartY - e.changedTouches[0].screenY);
-                if (diffY < 60 && Math.abs(diffX) > 80 && document.activeElement.tagName !== 'INPUT') {
-                    switchTab(diffX > 0 ? 'table' : 'calc');
+    function updateDisplay() {
+        for (const key in inputs) {
+            const el = document.getElementById(`display-${key}`);
+            if (el) {
+                if (inputs[key] === '') {
+                    el.innerText = '0';
+                    el.style.opacity = '0.3';
+                } else {
+                    el.innerText = parseFloat(inputs[key]).toLocaleString('ja-JP');
+                    el.style.opacity = '1';
                 }
-            }, { passive: true });
+            }
+        }
+        saveToStorage();
+    }
+
+    function excelMod(number, divisor) {
+        if (divisor === 0) return 0;
+        return number - divisor * Math.floor(number / divisor);
+    }
+
+    function calculate() {
+        const L = parseFloat(inputs.totalLength);
+        const size = parseFloat(inputs.size);
+
+        const resTaniZan = document.getElementById('resTaniZan');
+        const resYamaZan = document.getElementById('resYamaZan');
+        const resYaneTani = document.getElementById('resYaneTani');
+        const resYaneYama = document.getElementById('resYaneYama');
+        const displayCenterL = document.getElementById('display-centerL');
+
+        if (isNaN(L) || isNaN(size) || size <= 0) {
+            resTaniZan.innerText = "-";
+            resYamaZan.innerText = "-";
+            resYaneTani.innerText = "-";
+            resYaneYama.innerText = "-";
+            displayCenterL.innerText = "0";
+            return;
         }
 
-        totalLengthDisplay.addEventListener('focus', (e) => {
-            e.target.value = ''; 
-        });
+        let yama = 0, tani = 0;
+        if (size === 600) { yama = 200; tani = 100; }
+        else if (size === 500) { yama = 250; tani = 125; }
+        else if (size === 1000) { yama = 500; tani = 250; }
 
-        totalLengthDisplay.addEventListener('input', (e) => {
-            let value = e.target.value.replace(/[^\d]/g, '');
-            if (value !== "") e.target.value = parseInt(value).toLocaleString();
-            else e.target.value = "";
+        displayCenterL.innerText = Math.round(L / 2).toLocaleString();
+
+        const taniZan = excelMod(L / 2, yama);
+        const yamaZan = excelMod((L / 2) - tani, yama);
+
+        resTaniZan.innerText = Math.floor(taniZan).toLocaleString();
+        resYamaZan.innerText = Math.floor(yamaZan).toLocaleString();
+        
+        resYaneTani.innerText = Math.floor(yamaZan).toLocaleString();
+        resYaneYama.innerText = Math.floor(taniZan).toLocaleString();
+    }
+
+    function generateTable() {
+        const L = parseFloat(inputs.totalLength);
+        const size = parseFloat(inputs.size);
+        const tbody = document.getElementById('resultTableBody');
+        tbody.innerHTML = '';
+
+        document.getElementById('table-badge-L').innerText = isNaN(L) ? '-' : L.toLocaleString();
+        document.getElementById('foot-size').innerText = isNaN(size) ? '-' : size.toLocaleString();
+        
+        const footTotalCount = document.getElementById('foot-totalCount');
+        footTotalCount.innerText = "-";
+
+        if (isNaN(L) || isNaN(size) || size <= 0) return;
+
+        let yama = 0, tani = 0;
+        if (size === 600) { yama = 200; tani = 100; }
+        else if (size === 500) { yama = 250; tani = 125; }
+        else if (size === 1000) { yama = 500; tani = 250; }
+
+        const taniStart = excelMod(L / 2, yama);
+        const yamaStart = excelMod((L / 2) - tani, yama);
+
+        let curTani = taniStart;
+        let curYama = yamaStart;
+        let count = 0;
+
+        while (curTani <= L || curYama <= L) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="table-cell border-r border-[#333] text-[#0a84ff]">${(curTani <= L && curTani >= 0) ? Math.floor(curTani).toLocaleString() : '-'}</td>
+                <td class="table-cell text-[#30d158]">${(curYama <= L && curYama >= 0) ? Math.floor(curYama).toLocaleString() : '-'}</td>
+            `;
+            tbody.appendChild(tr);
+            curTani += size;
+            curYama += size;
+            count++;
+            if (count > 1000) break;
+        }
+        footTotalCount.innerText = count.toLocaleString();
+    }
+
+    function saveToStorage() {
+        localStorage.setItem(storageKey, JSON.stringify(inputs));
+    }
+
+    function loadFromStorage() {
+        const saved = localStorage.getItem(storageKey);
+        if (saved) {
+            const data = JSON.parse(saved);
+            Object.assign(inputs, data);
+            document.getElementById('sizeSelect').value = inputs.size;
+            updateDisplay();
             calculate();
-        });
+        }
+    }
 
-        totalLengthDisplay.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.target.blur(); 
-            }
-        });
+    function copyValue(id) {
+        const val = document.getElementById(id).innerText;
+        if (val === "-") return;
+        const temp = document.createElement('textarea');
+        temp.value = val.replace(/,/g, '');
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand('copy');
+        document.body.removeChild(temp);
+        showToast("コピーしました");
+    }
 
-        totalLengthDisplay.addEventListener('blur', () => {
-            saveData();
-        });
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.innerText = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 1000);
+    }
 
-        sizeSelect.addEventListener('change', () => {
-            calculate();
-            saveData();
-        });
+    let touchStartX = 0;
+    let touchStartY = 0;
 
-        window.addEventListener('DOMContentLoaded', loadData);
-    </script>
+    document.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].clientX;
+        touchStartY = e.changedTouches[0].clientY;
+    }, { passive: true });
+
+    document.addEventListener('touchend', e => {
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+
+        const touchEndX = e.changedTouches[0].clientX;
+        const touchEndY = e.changedTouches[0].clientY;
+
+        const deltaX = touchStartX - touchEndX;
+        const deltaY = Math.abs(touchStartY - touchEndY);
+
+        if (Math.abs(deltaX) > 80 && deltaY < 100) {
+            if (deltaX > 0 && currentActiveTab === 'calc') switchTab('table');
+            else if (deltaX < 0 && currentActiveTab === 'table') switchTab('calc');
+        }
+    }, { passive: true });
+
+    window.onload = () => {
+        loadFromStorage();
+        focusInput('totalLength');
+    };
+</script>
 </body>
 </html>
