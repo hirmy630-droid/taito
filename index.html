@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>タイトフレーム計算</title>
+    <title>タイトフレーム計算 - KYOWA ROOF</title>
     <script src="https://cdn.tailwindcss.com/3.4.1"></script>
     <style>
         :root {
@@ -37,6 +37,17 @@
             overflow-x: hidden;
         }
 
+        /* ヘッダー */
+        .header-bar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--ios-border);
+            background: var(--ios-bg);
+        }
+
         /* スリムなタブ */
         .tab-wrapper {
             position: sticky;
@@ -67,7 +78,7 @@
             background: transparent;
             color: var(--ios-silver-dark);
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 500;
             border-radius: 8px;
             cursor: pointer;
             transition: 0.2s;
@@ -108,7 +119,7 @@
 
         .result-value {
             font-size: 37px; 
-            font-weight: 900;
+            font-weight: 700; /* 900から変更 */
             color: #ffffff;
             display: flex;
             align-items: baseline;
@@ -117,7 +128,7 @@
 
         .result-label-left {
             font-size: 15px; 
-            font-weight: 900;
+            font-weight: 700; /* 900から変更 */
             line-height: 1.2;
             text-transform: uppercase;
             min-width: 60px;
@@ -125,21 +136,21 @@
 
         .unit-text {
             font-size: 16px;
-            font-weight: 800;
+            font-weight: 600; /* 800から変更 */
             color: #ffffff;
             opacity: 0.6;
         }
 
         .separator-slash {
             font-size: 18px;
-            font-weight: 900;
+            font-weight: 600; /* 900から変更 */
             opacity: 0.2;
             margin: 0 4px;
         }
 
         .yane-area {
             font-size: 15px;
-            font-weight: 700;
+            font-weight: 500; /* 700から変更 */
             opacity: 0.7;
             display: flex;
             align-items: baseline;
@@ -192,7 +203,7 @@
 
         .input-value {
             font-size: 26px;
-            font-weight: 700;
+            font-weight: 600; /* 700から変更 */
             color: #ffffff;
             flex: 1;
             text-align: right;
@@ -200,7 +211,7 @@
 
         .input-label-left {
             font-size: 14px;
-            font-weight: 900;
+            font-weight: 600; /* 900から変更 */
             color: var(--label-gray);
             margin-right: 4px;
             white-space: nowrap;
@@ -229,8 +240,8 @@
             transition: background 0.1s;
         }
         .key-btn:active { background: #333; }
-        .key-btn.orange { background: var(--ios-orange); font-weight: 700; }
-        .key-btn.gray { background: #2c2c2e; color: var(--label-gray); font-size: 18px; font-weight: 700; }
+        .key-btn.orange { background: var(--ios-orange); font-weight: 600; }
+        .key-btn.gray { background: #2c2c2e; color: var(--label-gray); font-size: 18px; font-weight: 600; }
 
         .key-backspace {
             font-size: 32px !important;
@@ -249,24 +260,13 @@
             padding: 6px 4px;
             border-bottom: 1px solid var(--ios-border);
             font-size: 18px;
-            font-weight: 900;
+            font-weight: 700; /* 900から変更 */
             text-align: center;
         }
 
         .table-foot-row {
             background: #2c2c2e;
             border-top: 2px solid #444;
-        }
-
-        .app-footer-bar {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 16px 12px 40px;
-            font-size: 12px;
-            color: var(--ios-silver); /* シルバーに変更 */
-            font-weight: 600;
-            opacity: 0.6; /* 馴染ませるための不透明度 */
         }
 
         #toast {
@@ -293,6 +293,12 @@
     <div id="toast">コピーしました</div>
 
     <div class="main-container">
+        <!-- ヘッダー -->
+        <div class="header-bar">
+            <span style="font-size: 14px; font-weight: 600;">タイトフレーム計算</span>
+            <span style="font-size: 12px; opacity: 0.8; font-weight: 500;">KYOWA ROOF</span>
+        </div>
+
         <!-- タブメニュー -->
         <div class="tab-wrapper">
             <div class="tab-container">
@@ -311,7 +317,7 @@
                         <span id="resTaniZan">-</span><span class="unit-text">㎜</span>
                         <span class="separator-slash">/</span>
                         <div class="yane-area">
-                            <span>屋根割付 </span><span id="resYaneTani">-</span><span class="unit-text text-[12px] opacity-40 ml-0.5">㎜</span>
+                            <span>屋根割付 </span><span id="resYaneTani" class="font-bold ml-1">-</span><span class="unit-text text-[12px] opacity-40 ml-0.5">㎜</span>
                         </div>
                     </div>
                 </div>
@@ -321,7 +327,7 @@
                         <span id="resYamaZan">-</span><span class="unit-text">㎜</span>
                         <span class="separator-slash">/</span>
                         <div class="yane-area">
-                            <span>屋根割付 </span><span id="resYaneYama">-</span><span class="unit-text text-[12px] opacity-40 ml-0.5">㎜</span>
+                            <span>屋根割付 </span><span id="resYaneYama" class="font-bold ml-1">-</span><span class="unit-text text-[12px] opacity-40 ml-0.5">㎜</span>
                         </div>
                     </div>
                 </div>
@@ -377,25 +383,25 @@
             <div class="table-area">
                 <div class="table-card">
                     <div class="bg-[#2c2c2e] p-3 flex justify-between items-center border-b border-[#444]">
-                        <span class="font-black text-base">全長: <span id="table-badge-L">-</span>㎜</span>
+                        <span class="font-bold text-base">全長: <span id="table-badge-L">-</span>㎜</span>
                         <span class="text-sm bg-[#ff9f0a] px-2 py-0.5 rounded font-bold text-black shadow-sm">割付表</span>
                     </div>
                     <table class="w-full">
                         <thead class="shadow-md">
-                            <tr class="bg-[#2c2c2e] text-[14px] text-zinc-400 font-bold border-b border-[#444]">
+                            <tr class="bg-[#2c2c2e] text-[14px] text-zinc-400 font-semibold border-b border-[#444]">
                                 <th class="py-2 border-r border-[#444] w-1/2 text-[#0a84ff] tracking-wider">谷芯(mm)</th>
                                 <th class="py-2 w-1/2 text-[#30d158] tracking-wider">山芯(mm)</th>
                             </tr>
                         </thead>
                         <tbody id="resultTableBody"></tbody>
                         <tfoot class="table-foot-row shadow-inner">
-                            <tr class="font-bold border-t border-[#444]">
+                            <tr class="font-semibold border-t border-[#444]">
                                 <td class="py-2 border-r border-[#444] text-center text-[#0a84ff]">
-                                    <span class="text-[14px] block opacity-70 mb-0.5">本数合計</span>
+                                    <span class="text-[14px] block opacity-70 mb-0.5 font-bold">本数合計</span>
                                     <span class="text-[18px]"><span id="foot-totalCount">-</span>本</span>
                                 </td>
                                 <td class="py-2 text-center text-[#30d158]">
-                                    <span class="text-[14px] block opacity-70 mb-0.5">タイプ</span>
+                                    <span class="text-[14px] block opacity-70 mb-0.5 font-bold">タイプ</span>
                                     <span class="text-[18px]"><span id="foot-size">-</span>㎜</span>
                                 </td>
                             </tr>
@@ -403,12 +409,6 @@
                     </table>
                 </div>
             </div>
-        </div>
-
-        <!-- フッター (配色シルバーに変更) -->
-        <div class="app-footer-bar">
-            <span>タイトフレーム計算</span>
-            <span>KYOWA ROOF</span>
         </div>
     </div>
 
